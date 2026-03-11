@@ -1,0 +1,15 @@
+{
+  "name": "pdf-lock",
+  "version": "1.0.0",
+  "description": "PDFファイルをパスワード付きZIPにロックするWebアプリ",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "archiver": "^7.0.0",
+    "archiver-zip-encrypted": "^2.0.0",
+    "busboy": "^1.6.0",
+    "nodemailer": "^6.9.0"
+  }
+}
