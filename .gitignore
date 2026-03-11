@@ -3,3 +3,5 @@ uploads/
 output/
 .vercel/
 .env
+
+.vercel
