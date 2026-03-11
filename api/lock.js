@@ -4,6 +4,13 @@ archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted'));
 const crypto = require('crypto');
 const { PassThrough } = require('stream');
 
+// Vercel: bodyParserを無効化してrawストリームを取得
+module.exports.config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 function generatePassword(length = 12) {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
   const bytes = crypto.randomBytes(length);
@@ -30,7 +37,14 @@ function parseMultipart(req) {
     busboy.on('finish', () => resolve(files));
     busboy.on('error', reject);
 
-    req.pipe(busboy);
+    // Vercel環境: reqがバッファリング済みの場合はbodyを直接書き込む
+    if (req.body && Buffer.isBuffer(req.body)) {
+      busboy.end(req.body);
+    } else if (req.rawBody) {
+      busboy.end(req.rawBody);
+    } else {
+      req.pipe(busboy);
+    }
   });
 }
 
