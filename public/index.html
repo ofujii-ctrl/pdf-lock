@@ -3,502 +3,364 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PDFロック</title>
+  <title>PDFロック - PDF暗号化＆メール送信</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', 'Yu Gothic UI', 'Meiryo', sans-serif;
-      background: #f0f2f5;
-      color: #333;
-      min-height: 100vh;
-    }
-    .container {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 32px 16px;
-    }
-    h1 {
-      text-align: center;
-      font-size: 24px;
-      margin-bottom: 8px;
-      color: #1a1a2e;
-    }
-    .subtitle {
-      text-align: center;
-      color: #666;
-      font-size: 14px;
-      margin-bottom: 32px;
-    }
-    .step { display: none; }
-    .step.active { display: block; }
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      margin-bottom: 16px;
-    }
-    .card h2 {
-      font-size: 18px;
-      margin-bottom: 16px;
-      color: #1a1a2e;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .step-badge {
-      background: #4361ee;
-      color: #fff;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: bold;
-      flex-shrink: 0;
-    }
-    .drop-zone {
-      border: 2px dashed #c0c0c0;
-      border-radius: 8px;
-      padding: 48px 24px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      background: #fafbfc;
-    }
-    .drop-zone:hover, .drop-zone.drag-over {
-      border-color: #4361ee;
-      background: #eef1ff;
-    }
-    .drop-zone p { color: #666; margin-bottom: 8px; }
-    .drop-zone .hint { font-size: 12px; color: #999; }
-    .file-list { margin-top: 16px; }
-    .file-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 12px;
-      background: #f8f9fa;
-      border-radius: 6px;
-      margin-bottom: 6px;
-      font-size: 14px;
-    }
-    .file-item .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .file-item .size { color: #888; margin: 0 12px; font-size: 12px; white-space: nowrap; }
-    .file-item .remove {
-      background: none;
-      border: none;
-      color: #e63946;
-      cursor: pointer;
-      font-size: 18px;
-      padding: 0 4px;
-    }
-    .btn {
-      display: inline-block;
-      padding: 12px 32px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-    }
-    .btn-primary { background: #4361ee; color: #fff; }
-    .btn-primary:hover { background: #3a56d4; }
-    .btn-primary:disabled { background: #b0b0b0; cursor: not-allowed; }
-    .btn-success { background: #2d6a4f; color: #fff; }
-    .btn-success:hover { background: #245a42; }
-    .btn-outline { background: #fff; color: #4361ee; border: 2px solid #4361ee; }
-    .btn-outline:hover { background: #eef1ff; }
-    .btn-block { width: 100%; text-align: center; }
-    .btn-group { display: flex; gap: 12px; margin-top: 16px; }
-    .password-display {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 16px 0;
-      padding: 16px;
-      background: #f0fdf4;
-      border: 1px solid #86efac;
-      border-radius: 8px;
-    }
-    .password-display .pw {
-      font-family: 'Consolas', 'Courier New', monospace;
-      font-size: 20px;
-      font-weight: bold;
-      letter-spacing: 1px;
-      flex: 1;
-      color: #166534;
-    }
-    .copy-btn {
-      padding: 8px 16px;
-      background: #166534;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 13px;
-      white-space: nowrap;
-    }
-    .copy-btn:hover { background: #14532d; }
-    .info-box {
-      background: #fff7ed;
-      border: 1px solid #fed7aa;
-      border-radius: 8px;
-      padding: 16px;
-      margin: 16px 0;
-      font-size: 14px;
-      color: #9a3412;
-      line-height: 1.6;
-    }
-    .form-group { margin-bottom: 16px; }
-    .form-group label {
-      display: block;
-      font-size: 14px;
-      font-weight: bold;
-      margin-bottom: 6px;
-      color: #444;
-    }
-    .form-group input, .form-group textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #d0d0d0;
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: inherit;
-    }
-    .form-group textarea { height: 120px; resize: vertical; }
-    .form-group input:focus, .form-group textarea:focus {
-      outline: none;
-      border-color: #4361ee;
-      box-shadow: 0 0 0 3px rgba(67,97,238,0.15);
-    }
-    .smtp-toggle {
-      font-size: 13px;
-      color: #4361ee;
-      cursor: pointer;
-      margin-bottom: 12px;
-      display: inline-block;
-    }
-    .smtp-settings { display: none; margin-bottom: 16px; }
-    .smtp-settings.show { display: block; }
-    .smtp-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    .status {
-      text-align: center;
-      padding: 12px;
-      border-radius: 8px;
-      margin-top: 12px;
-      font-size: 14px;
-    }
-    .status.success { background: #f0fdf4; color: #166534; }
-    .status.error { background: #fef2f2; color: #991b1b; }
-    .loading { display: none; text-align: center; padding: 24px; }
-    .loading.show { display: block; }
-    .spinner {
-      width: 40px; height: 40px;
-      border: 4px solid #e0e0e0;
-      border-top: 4px solid #4361ee;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 12px;
-    }
+    body { font-family: 'Segoe UI', 'Hiragino Sans', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+
+    .header { background: #1a73e8; color: #fff; padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+    .header h1 { font-size: 20px; font-weight: 600; }
+    .header .icon { font-size: 28px; }
+
+    .container { max-width: 720px; margin: 24px auto; padding: 0 16px; }
+
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 24px; margin-bottom: 16px; }
+    .card h2 { font-size: 16px; font-weight: 600; color: #1a73e8; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .card h2 .step { background: #1a73e8; color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+
+    /* ドロップゾーン */
+    .drop-zone { border: 2px dashed #ccc; border-radius: 8px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.2s; }
+    .drop-zone:hover, .drop-zone.dragover { border-color: #1a73e8; background: #e8f0fe; }
+    .drop-zone p { color: #666; font-size: 14px; }
+    .drop-zone .big { font-size: 36px; margin-bottom: 8px; }
+    .drop-zone input { display: none; }
+
+    /* ファイルリスト */
+    .file-list { margin-top: 12px; }
+    .file-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #f8f9fa; border-radius: 6px; margin-bottom: 6px; font-size: 14px; }
+    .file-item .name { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+    .file-item .name span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-item .remove { color: #d93025; cursor: pointer; font-size: 18px; padding: 0 4px; flex-shrink: 0; }
+    .file-item .size { color: #888; font-size: 12px; margin-left: 8px; flex-shrink: 0; }
+
+    /* パスワード */
+    .pw-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .pw-display { font-family: 'Consolas', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; color: #1a73e8; background: #e8f0fe; padding: 10px 16px; border-radius: 6px; flex: 1; text-align: center; user-select: all; }
+    .pw-length { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666; }
+    .pw-length input[type="range"] { width: 120px; }
+
+    /* フォーム */
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: #555; margin-bottom: 4px; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit; }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #1a73e8; box-shadow: 0 0 0 2px #e8f0fe; }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+
+    /* ボタン */
+    .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: #1a73e8; color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #1557b0; }
+    .btn-success { background: #0d904f; color: #fff; }
+    .btn-success:hover:not(:disabled) { background: #0a7a42; }
+    .btn-warning { background: #e8710a; color: #fff; }
+    .btn-warning:hover:not(:disabled) { background: #c75f08; }
+    .btn-outline { background: #fff; color: #1a73e8; border: 1px solid #1a73e8; }
+    .btn-outline:hover:not(:disabled) { background: #e8f0fe; }
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ステータス */
+    .status { padding: 12px 16px; border-radius: 8px; margin-top: 12px; font-size: 14px; display: none; }
+    .status.show { display: block; }
+    .status.success { background: #e6f4ea; color: #137333; }
+    .status.error { background: #fce8e6; color: #c5221f; }
+    .status.info { background: #e8f0fe; color: #1a73e8; }
+
+    /* 進行状態 */
+    .card.disabled { opacity: 0.5; pointer-events: none; }
+    .card.active { border-left: 4px solid #1a73e8; }
+    .card.done { border-left: 4px solid #0d904f; }
+
+    .loader { display: inline-block; width: 18px; height: 18px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .reset-area { text-align: center; margin-top: 24px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>PDFロック</h1>
-    <p class="subtitle">ファイルをパスワード付きZIPで安全に送付</p>
 
-    <!-- Step 1: アップロード -->
-    <div id="step1" class="step active">
-      <div class="card">
-        <h2><span class="step-badge">1</span>ファイルをアップロード</h2>
-        <div id="dropZone" class="drop-zone">
-          <p>ここにファイルをドラッグ&ドロップ</p>
-          <p class="hint">または クリックしてファイルを選択（複数可）</p>
-          <input type="file" id="fileInput" multiple style="display:none">
-        </div>
-        <div id="fileList" class="file-list"></div>
-        <div class="btn-group" style="justify-content:center">
-          <button id="lockBtn" class="btn btn-primary" disabled>ZIPロック</button>
-        </div>
-      </div>
-      <div id="loadingLock" class="loading">
-        <div class="spinner"></div>
-        <p>ZIP作成中...</p>
-      </div>
+<div class="header">
+  <span class="icon">🔒</span>
+  <h1>PDFロック</h1>
+</div>
+
+<div class="container">
+
+  <!-- Step 1: ファイル選択 -->
+  <div class="card active" id="step1">
+    <h2><span class="step">1</span>PDFファイルを選択</h2>
+    <div class="drop-zone" id="dropZone">
+      <div class="big">📄</div>
+      <p>PDFファイルをドラッグ＆ドロップ<br>またはクリックして選択（複数可）</p>
+      <input type="file" id="fileInput" accept=".pdf" multiple>
     </div>
-
-    <!-- Step 2: ロック完了 -->
-    <div id="step2" class="step">
-      <div class="card">
-        <h2><span class="step-badge">2</span>ZIPロック完了</h2>
-        <div class="password-display">
-          <span class="pw" id="passwordText"></span>
-          <button class="copy-btn" id="copyPwBtn">コピー</button>
-        </div>
-        <div class="btn-group" style="justify-content:center">
-          <button id="downloadBtn" class="btn btn-primary">ZIPをダウンロード</button>
-        </div>
-        <div class="info-box">
-          ZIPファイルをメール等で相手に送付してください。<br>
-          相手がファイルを受信したことを確認してから、下のステップでパスワードを送信してください。
-        </div>
-      </div>
-
-      <div class="card">
-        <h2><span class="step-badge">3</span>パスワードを送信</h2>
-        <div class="form-group">
-          <label>宛先メールアドレス</label>
-          <input type="email" id="toEmail" placeholder="example@company.co.jp">
-        </div>
-        <div class="form-group">
-          <label>メール本文（プレビュー）</label>
-          <textarea id="mailBody" readonly></textarea>
-        </div>
-        <span class="smtp-toggle" id="smtpToggle">SMTP設定を表示 ▼</span>
-        <div id="smtpSettings" class="smtp-settings">
-          <div class="smtp-grid">
-            <div class="form-group">
-              <label>SMTPホスト</label>
-              <input type="text" id="smtpHost" placeholder="smtp.gmail.com" value="smtp.gmail.com">
-            </div>
-            <div class="form-group">
-              <label>ポート</label>
-              <input type="number" id="smtpPort" placeholder="587" value="587">
-            </div>
-            <div class="form-group">
-              <label>ユーザー名</label>
-              <input type="text" id="smtpUser" placeholder="your@gmail.com">
-            </div>
-            <div class="form-group">
-              <label>パスワード</label>
-              <input type="password" id="smtpPass" placeholder="アプリパスワード">
-            </div>
-            <div class="form-group" style="grid-column: span 2">
-              <label>送信元メールアドレス</label>
-              <input type="email" id="fromEmail" placeholder="your@gmail.com">
-            </div>
-          </div>
-        </div>
-        <button id="sendPwBtn" class="btn btn-success btn-block">パスワードを送信</button>
-        <div id="sendStatus"></div>
-      </div>
-      <div class="reset-area">
-        <button id="resetBtn" class="btn btn-outline">新しいファイルをロック</button>
-      </div>
-    </div>
+    <div class="file-list" id="fileList"></div>
   </div>
 
-  <script>
-    let selectedFiles = [];
-    let currentPassword = '';
-    let currentZipFilename = '';
-    let currentZipBase64 = '';
+  <!-- Step 2: パスワード設定 & ロック -->
+  <div class="card disabled" id="step2">
+    <h2><span class="step">2</span>パスワード設定 & ロック</h2>
+    <div class="pw-row">
+      <div class="pw-display" id="pwDisplay">--</div>
+      <button class="btn btn-outline" onclick="regeneratePassword()" title="再生成">🔄</button>
+      <button class="btn btn-outline" onclick="copyPassword()" title="コピー">📋</button>
+    </div>
+    <div class="pw-length">
+      <span>文字数:</span>
+      <input type="range" id="pwLength" min="8" max="24" value="12" oninput="pwLengthVal.textContent=this.value; regeneratePassword()">
+      <span id="pwLengthVal">12</span>
+    </div>
+    <div style="margin-top: 16px;">
+      <button class="btn btn-primary" id="lockBtn" onclick="lockPDFs()">🔒 PDFをロック</button>
+    </div>
+    <div class="status" id="lockStatus"></div>
+  </div>
 
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const fileList = document.getElementById('fileList');
-    const lockBtn = document.getElementById('lockBtn');
+  <!-- Step 3: メール送信 -->
+  <div class="card disabled" id="step3">
+    <h2><span class="step">3</span>メール送信</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>宛先（To）*</label>
+        <input type="email" id="emailTo" placeholder="example@company.co.jp">
+      </div>
+      <div class="form-group">
+        <label>CC</label>
+        <input type="email" id="emailCc" placeholder="cc@company.co.jp">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>件名 *</label>
+      <input type="text" id="emailSubject" placeholder="資料送付の件">
+    </div>
+    <div class="form-group">
+      <label>本文 *</label>
+      <textarea id="emailBody" placeholder="お世話になっております。&#10;資料をお送りいたします。&#10;ご確認のほどよろしくお願いいたします。"></textarea>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-success" id="sendBtn" onclick="sendEmail()">📧 添付メール送信</button>
+      <button class="btn btn-warning" id="pwBtn" onclick="sendPasswordEmail()">🔑 パスワード通知メール</button>
+    </div>
+    <div class="status" id="emailStatus"></div>
+  </div>
 
-    // ドラッグ&ドロップ
-    dropZone.addEventListener('click', () => fileInput.click());
-    dropZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      dropZone.classList.add('drag-over');
-    });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('drag-over');
-      addFiles(e.dataTransfer.files);
-    });
-    fileInput.addEventListener('change', () => {
-      addFiles(fileInput.files);
-      fileInput.value = '';
-    });
+  <!-- ダウンロード（バックアップ用） -->
+  <div class="card disabled" id="step4">
+    <h2><span class="step">↓</span>ダウンロード（任意）</h2>
+    <p style="font-size:13px; color:#666; margin-bottom:12px;">メール送信とは別に、暗号化済みPDFを手元にダウンロードできます。</p>
+    <div id="downloadList"></div>
+  </div>
 
-    function addFiles(filesList) {
-      for (const f of filesList) {
+</div>
+
+<script>
+  let selectedFiles = [];
+  let currentSessionId = null;
+  let currentPassword = '';
+
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const fileList = document.getElementById('fileList');
+
+  // ドラッグ＆ドロップ
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    addFiles(Array.from(e.dataTransfer.files).filter(f => f.name.toLowerCase().endsWith('.pdf')));
+  });
+  fileInput.addEventListener('change', () => { addFiles(Array.from(fileInput.files)); fileInput.value = ''; });
+
+  function addFiles(files) {
+    for (const f of files) {
+      if (!selectedFiles.some(sf => sf.name === f.name && sf.size === f.size)) {
         selectedFiles.push(f);
       }
-      renderFileList();
     }
+    renderFileList();
+    updateSteps();
+  }
 
-    function renderFileList() {
-      fileList.innerHTML = '';
-      selectedFiles.forEach((f, i) => {
-        const div = document.createElement('div');
-        div.className = 'file-item';
-        div.innerHTML = `
-          <span class="name">${escapeHtml(f.name)}</span>
-          <span class="size">${formatSize(f.size)}</span>
-          <button class="remove" data-idx="${i}">&times;</button>
-        `;
-        div.querySelector('.remove').addEventListener('click', () => {
-          selectedFiles.splice(i, 1);
-          renderFileList();
-        });
-        fileList.appendChild(div);
-      });
-      lockBtn.disabled = selectedFiles.length === 0;
+  function removeFile(idx) {
+    selectedFiles.splice(idx, 1);
+    renderFileList();
+    updateSteps();
+    // ロック済みをリセット
+    currentSessionId = null;
+    document.getElementById('step3').classList.add('disabled');
+    document.getElementById('step3').classList.remove('active');
+    document.getElementById('step4').classList.add('disabled');
+  }
+
+  function renderFileList() {
+    fileList.innerHTML = selectedFiles.map((f, i) => `
+      <div class="file-item">
+        <div class="name">📄 <span>${f.name}</span></div>
+        <div style="display:flex;align-items:center;">
+          <span class="size">${(f.size / 1024).toFixed(0)} KB</span>
+          <span class="remove" onclick="removeFile(${i})">✕</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function updateSteps() {
+    const step2 = document.getElementById('step2');
+    if (selectedFiles.length > 0) {
+      step2.classList.remove('disabled');
+      step2.classList.add('active');
+      if (currentPassword === '') regeneratePassword();
+    } else {
+      step2.classList.add('disabled');
+      step2.classList.remove('active');
     }
+  }
 
-    // ZIPロック
-    lockBtn.addEventListener('click', async () => {
-      if (selectedFiles.length === 0) return;
+  // パスワード
+  function regeneratePassword() {
+    const len = parseInt(document.getElementById('pwLength').value);
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    const arr = new Uint8Array(len);
+    crypto.getRandomValues(arr);
+    currentPassword = Array.from(arr).map(b => chars[b % chars.length]).join('');
+    document.getElementById('pwDisplay').textContent = currentPassword;
+  }
 
-      lockBtn.disabled = true;
-      document.getElementById('loadingLock').classList.add('show');
+  function copyPassword() {
+    navigator.clipboard.writeText(currentPassword);
+    showStatus('lockStatus', 'パスワードをコピーしました', 'info');
+  }
 
-      try {
-        const formData = new FormData();
-        for (const f of selectedFiles) {
-          formData.append('files', f);
-        }
+  // PDFロック
+  async function lockPDFs() {
+    const lockBtn = document.getElementById('lockBtn');
+    lockBtn.disabled = true;
+    lockBtn.innerHTML = '<span class="loader"></span> 暗号化中...';
 
-        const res = await fetch('/api/lock', {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
+    try {
+      const formData = new FormData();
+      selectedFiles.forEach(f => formData.append('files', f));
+      formData.append('password', currentPassword);
 
-        currentPassword = data.password;
-        currentZipFilename = data.zipFilename;
-        currentZipBase64 = data.zipBase64;
+      const resp = await fetch('/api/lock', { method: 'POST', body: formData });
+      const data = await resp.json();
 
-        document.getElementById('passwordText').textContent = currentPassword;
-        updateMailBody();
+      if (!resp.ok) throw new Error(data.error);
 
-        document.getElementById('step1').classList.remove('active');
-        document.getElementById('step2').classList.add('active');
-      } catch (err) {
-        alert('ZIPロック失敗: ' + err.message);
-        lockBtn.disabled = false;
-      } finally {
-        document.getElementById('loadingLock').classList.remove('show');
-      }
-    });
+      currentSessionId = data.sessionId;
+      showStatus('lockStatus', `✅ ${data.files.length}件のPDFをロックしました`, 'success');
 
-    // ZIPダウンロード（Base64からブラウザでダウンロード）
-    document.getElementById('downloadBtn').addEventListener('click', () => {
-      const byteChars = atob(currentZipBase64);
-      const byteNumbers = new Array(byteChars.length);
-      for (let i = 0; i < byteChars.length; i++) {
-        byteNumbers[i] = byteChars.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'application/zip' });
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = currentZipFilename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    });
-
-    // パスワードコピー
-    document.getElementById('copyPwBtn').addEventListener('click', () => {
-      navigator.clipboard.writeText(currentPassword).then(() => {
-        const btn = document.getElementById('copyPwBtn');
-        btn.textContent = 'コピー済み';
-        setTimeout(() => btn.textContent = 'コピー', 2000);
-      });
-    });
-
-    function updateMailBody() {
-      document.getElementById('mailBody').value =
-        `お世話になっております。\n\n先ほどお送りしたファイル（${currentZipFilename}）のパスワードをお知らせいたします。\n\nパスワード: ${currentPassword}\n\nお手数ですが、上記パスワードにてファイルを解凍してください。\nご不明な点がございましたら、お気軽にお問い合わせください。\n\nよろしくお願いいたします。`;
-    }
-
-    // SMTP設定トグル
-    document.getElementById('smtpToggle').addEventListener('click', () => {
-      const el = document.getElementById('smtpSettings');
-      el.classList.toggle('show');
-      document.getElementById('smtpToggle').textContent =
-        el.classList.contains('show') ? 'SMTP設定を非表示 ▲' : 'SMTP設定を表示 ▼';
-    });
-
-    // パスワード送信
-    document.getElementById('sendPwBtn').addEventListener('click', async () => {
-      const to = document.getElementById('toEmail').value.trim();
-      if (!to) return alert('宛先メールアドレスを入力してください');
-
-      const btn = document.getElementById('sendPwBtn');
-      btn.disabled = true;
-      btn.textContent = '送信中...';
-
-      try {
-        const res = await fetch('/api/send-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to,
-            zipFilename: currentZipFilename,
-            password: currentPassword,
-            smtpHost: document.getElementById('smtpHost').value,
-            smtpPort: document.getElementById('smtpPort').value,
-            smtpUser: document.getElementById('smtpUser').value,
-            smtpPass: document.getElementById('smtpPass').value,
-            fromEmail: document.getElementById('fromEmail').value
-          })
-        });
-        const data = await res.json();
-        const status = document.getElementById('sendStatus');
-        if (res.ok) {
-          status.className = 'status success';
-          status.textContent = 'パスワードを送信しました';
-        } else {
-          throw new Error(data.error);
-        }
-      } catch (err) {
-        const status = document.getElementById('sendStatus');
-        status.className = 'status error';
-        status.textContent = '送信失敗: ' + err.message;
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'パスワードを送信';
-      }
-    });
-
-    // リセット
-    document.getElementById('resetBtn').addEventListener('click', () => {
-      selectedFiles = [];
-      currentPassword = '';
-      currentZipFilename = '';
-      currentZipBase64 = '';
-      fileList.innerHTML = '';
-      lockBtn.disabled = true;
-      document.getElementById('toEmail').value = '';
-      document.getElementById('sendStatus').className = '';
-      document.getElementById('sendStatus').textContent = '';
+      // Step 3 有効化
       document.getElementById('step2').classList.remove('active');
-      document.getElementById('step1').classList.add('active');
-    });
+      document.getElementById('step2').classList.add('done');
+      document.getElementById('step3').classList.remove('disabled');
+      document.getElementById('step3').classList.add('active');
 
-    function formatSize(bytes) {
-      if (bytes < 1024) return bytes + ' B';
-      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+      // Step 4 ダウンロードリンク
+      document.getElementById('step4').classList.remove('disabled');
+      const dlList = document.getElementById('downloadList');
+      dlList.innerHTML = data.files.map((f, i) => `
+        <div class="file-item">
+          <div class="name">🔒 <span>${f.name}</span></div>
+          <a href="/api/download/${currentSessionId}/${i}" class="btn btn-outline" style="padding:6px 12px; font-size:13px; text-decoration:none;">⬇ DL</a>
+        </div>
+      `).join('');
+
+      // 件名に自動入力
+      if (!document.getElementById('emailSubject').value) {
+        const names = data.files.map(f => f.name.replace('.pdf', '')).join('、');
+        document.getElementById('emailSubject').value = `【資料送付】${names}`;
+      }
+
+    } catch (err) {
+      showStatus('lockStatus', `❌ ${err.message}`, 'error');
+    } finally {
+      lockBtn.disabled = false;
+      lockBtn.innerHTML = '🔒 PDFをロック';
     }
-    function escapeHtml(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
+  }
+
+  // 添付メール送信
+  async function sendEmail() {
+    const to = document.getElementById('emailTo').value.trim();
+    const subject = document.getElementById('emailSubject').value.trim();
+    const body = document.getElementById('emailBody').value.trim();
+
+    if (!to || !subject || !body) {
+      showStatus('emailStatus', '⚠️ 宛先・件名・本文を入力してください', 'error');
+      return;
     }
-  </script>
+
+    const sendBtn = document.getElementById('sendBtn');
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '<span class="loader"></span> 送信中...';
+
+    try {
+      const resp = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: currentSessionId,
+          to,
+          cc: document.getElementById('emailCc').value.trim(),
+          subject,
+          body
+        })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error);
+
+      showStatus('emailStatus', `✅ 添付メールを送信しました（宛先: ${to}）`, 'success');
+    } catch (err) {
+      showStatus('emailStatus', `❌ ${err.message}`, 'error');
+    } finally {
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = '📧 添付メール送信';
+    }
+  }
+
+  // パスワード通知メール
+  async function sendPasswordEmail() {
+    const to = document.getElementById('emailTo').value.trim();
+    if (!to) {
+      showStatus('emailStatus', '⚠️ 宛先を入力してください', 'error');
+      return;
+    }
+
+    const pwBtn = document.getElementById('pwBtn');
+    pwBtn.disabled = true;
+    pwBtn.innerHTML = '<span class="loader"></span> 送信中...';
+
+    try {
+      const resp = await fetch('/api/send-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: currentSessionId,
+          to,
+          cc: document.getElementById('emailCc').value.trim()
+        })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error);
+
+      showStatus('emailStatus', `✅ パスワード通知メールを送信しました（宛先: ${to}）`, 'success');
+    } catch (err) {
+      showStatus('emailStatus', `❌ ${err.message}`, 'error');
+    } finally {
+      pwBtn.disabled = false;
+      pwBtn.innerHTML = '🔑 パスワード通知メール';
+    }
+  }
+
+  function showStatus(id, msg, type) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = `status show ${type}`;
+    if (type === 'info') setTimeout(() => el.classList.remove('show'), 3000);
+  }
+</script>
 </body>
 </html>
